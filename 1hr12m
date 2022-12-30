@@ -1,0 +1,79 @@
+import io
+import math
+import urllib.request
+
+import pygame
+import random
+
+# Download the image from the URL
+response = urllib.request.urlopen("https://oir.mobi/uploads/posts/2021-01/1611928591_30-p-zadnii-fon-dlya-igri-31.jpg")
+image_data = response.read()
+image_data_stream = io.BytesIO(image_data)
+
+# Load the image using Pygame
+image = pygame.image.load(image_data_stream)
+
+# Set the window size and title
+window_size = image.get_size()
+window_title = "Background Image"
+screen = pygame.display.set_mode(window_size)
+pygame.display.set_caption(window_title)
+
+# Set the ball properties
+ball_color = (255, 0, 0)  # Red
+ball_radius = 20
+ball_position = (200, 200)  # Start at the center of the window
+
+# Set the speed at which the ball moves (pixels per second)
+speed = 400
+
+# Set the target position for the ball
+target_position = (random.randint(0, window_size[0]), random.randint(0, window_size[1]))
+
+# Set the frame rate
+frame_rate = 60
+clock = pygame.time.Clock()
+
+# Run the main loop
+running = True
+while running:
+    # Check for events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Draw the background image
+    screen.blit(image, (0, 0))
+
+
+    # Create a surface with a gradient fill
+    surface = pygame.Surface((50, 50))
+    surface.fill((255, 0, 0), rect=pygame.Rect(0, 0, 25, 50))  # Red to
+    surface.fill((0, 255, 0), rect=pygame.Rect(25, 0, 50, 50))  # Green
+
+    # Draw the gradient ball
+    pygame.draw.circle(screen, (10, 10, 10), ball_position, ball_radius)  # Shadow
+    pygame.draw.circle(screen, (100, 50, 90), ball_position, ball_radius)  # Gradient ball
+
+    # Update the ball position
+    elapsed_time = clock.tick(frame_rate) / 1000.0  # Convert milliseconds to seconds
+    dx = target_position[0] - ball_position[0]
+    dy = target_position[1] - ball_position[1]
+    distance = (dx ** 2 + dy ** 2) ** 0.5
+    if distance > speed * elapsed_time:
+        # Move the ball towards the target
+        angle = math.atan2(dy, dx)
+        ball_position = (
+            ball_position[0] + speed * math.cos(angle) * elapsed_time,
+            ball_position[1] + speed * math.sin(angle) * elapsed_time
+        )
+    else:
+        # Set the ball at the target position and choose a new target
+        ball_position = target_position
+        target_position = (random.randint(0, window_size[0]), random.randint(0, window_size[1]))
+
+    # Update the screen
+    pygame.display.flip()
+
+# Quit Pygame
+pygame.quit()
